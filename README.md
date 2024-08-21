@@ -1,6 +1,14 @@
+[![deploy](https://github.com/sarumaj/edu-taschenrechner/actions/workflows/deploy.yml/badge.svg)](https://github.com/sarumaj/edu-taschenrechner/actions/workflows/deploy.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sarumaj/edu-taschenrechner)](https://goreportcard.com/report/github.com/sarumaj/edu-taschenrechner)
+[![Maintainability](https://api.codeclimate.com/v1/badges/7892a10c0883ff8bbe71/maintainability)](https://codeclimate.com/github/sarumaj/edu-taschenrechner/maintainability)
+[![Go Reference](https://pkg.go.dev/badge/github.com/sarumaj/edu-taschenrechner.svg)](https://pkg.go.dev/github.com/sarumaj/edu-taschenrechner)
+[![Go version](https://img.shields.io/github/go-mod/go-version/sarumaj/edu-taschenrechner?logo=go&label=&labelColor=gray)](https://go.dev)
+
+---
+
 # taschenrechner
 
-This is an example project to showcase how to organize application code, implement unit tests and define integrity tests using a [BDT framework](https://www.loadmill.com/blog/behavior-driven-testing-the-complete-guide-to-bdt-automation).
+This is an example project to showcase how to organize application code, implement unit tests and define integrity tests using a [BDT framework](https://www.loadmill.com/blog/behavior-driven-testing-the-complete-guide-to-bdt-automation). The app is available under [taschenrechner.sarumaj.com](https://taschenrechner.sarumaj.com).
 
 ![Application screenshot](assets/demo.png)
 
@@ -52,6 +60,10 @@ To setup similar project follow following steps:
 - [test suite for entrypoint main_test.go](main_test.go)
 - [module file go.mod](go.mod)
 - [package pkg](pkg)
+  - [package eval](pkg/eval)
+    - [code file chain.go](pkg/eval/chain.go)
+    - [unit test file operand_test.go](pkg/eval/operand_test.go)
+    - [code file operand.go](pkg/eval/operand.go)
   - [package memory](pkg/memory)
     - [code file memory.go](pkg/memory/memory.go)
   - [package runes](pkg/runes)
@@ -60,19 +72,20 @@ To setup similar project follow following steps:
     - [code file utils.go](pkg/runes/utils.go)
   - [package ui](pkg/ui)
     - [code file app.go](pkg/ui/app.go)
-    - [unit test file utils_test.go](pkg/ui/utils_test.go)
-    - [code file utils.go](pkg/ui/utils_test.go)
+    - [code file button.go](pkg/ui/button.go)
+    - [code file display.go](pkg/ui/display.go)
+    - [code file theme.go](pkg/ui/theme.go)
 - [directory go-test](go-test)
   - [directory features](go-test/features)
     - [BDT feature file example.feature](go-test/features/example.feature)
 
 The [application entrypoint](main.go) makes use of the [package ui](pkg/ui). The import path is always the module name followed by the package path, e.g.
 
-| Property    | Value                                              |
-| ----------- | -------------------------------------------------- |
-| Module name | github.geo.conti.de/uid40324/taschenrechner        |
-| Package     | pkg/ui                                             |
-| Import path | github.geo.conti.de/uid40324/taschenrechner/pkg/ui |
+| Property    | Value                                    |
+| ----------- | ---------------------------------------- |
+| Module name | github.com/sarumaj/taschenrechner        |
+| Package     | pkg/ui                                   |
+| Import path | github.com/sarumaj/taschenrechner/pkg/ui |
 
 The app utilizes following frameworks:
 
@@ -83,7 +96,7 @@ As for the BDT testing the [Cucumber](https://cucumber.io) framework and its Go 
 
 The [unit test file input_test.go](pkg/runes/input_test.go) provides an example on how to write context-aware and well documented unit tests.
 
-The [unit test file utils_test.go](pkg/ui/utils_test.go) provides an example on how to write context-aware and compact unit tests (reduced number of lines).
+The [unit test file operand_test.go](pkg/eval/operand_test.go) provides an example on how to write context-aware and compact unit tests (reduced number of lines).
 
 The [test suite for entrypoint main_test.go](main_test.go) defines the feature steps parsed by the test engine:
 

@@ -2,57 +2,40 @@ package memory
 
 import (
 	"sync"
-
-	"fyne.io/fyne/v2"
 )
 
+// Make sure *memoryCell implements MemoryCell
 var _ MemoryCell = &memoryCell{}
 
 // MemoryCell is an invisible CanvasObject for storing and retrieving anything.
 type MemoryCell interface {
-	fyne.CanvasObject
 	Get() any
-	Set(any)
+	Set(any) error
 }
 
 // *memoryCell will implement MemoryCell
 type memoryCell struct {
 	sync.Mutex
-	Value any
+	value any
 }
 
-/*
-Implement fyne.CanvasObject
-*/
-
-func (*memoryCell) MinSize() fyne.Size      { return fyne.Size{} }
-func (*memoryCell) Move(fyne.Position)      {}
-func (*memoryCell) Position() fyne.Position { return fyne.Position{} }
-func (*memoryCell) Resize(fyne.Size)        {}
-func (*memoryCell) Size() fyne.Size         { return fyne.Size{} }
-func (*memoryCell) Hide()                   {}
-func (*memoryCell) Visible() bool           { return false }
-func (*memoryCell) Show()                   {}
-func (*memoryCell) Refresh()                {}
-
-/*
-Implement MemoryCell
-*/
-
+// Get retrieves the value from the memory cell.
 func (m *memoryCell) Get() any {
 	m.Lock()
 	defer m.Unlock()
 
-	return m.Value
+	return m.value
 }
 
-func (m *memoryCell) Set(value any) {
+// Set stores the value in the memory cell.
+func (m *memoryCell) Set(value any) error {
 	m.Lock()
-	m.Value = value
-	m.Unlock()
+	defer m.Unlock()
+
+	m.value = value
+
+	return nil
 }
 
 // NewMemoryCell creates a new MemoryCell object.
-func NewMemoryCell() MemoryCell {
-	return &memoryCell{}
-}
+func NewMemoryCell() MemoryCell { return &memoryCell{} }
