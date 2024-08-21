@@ -1,0 +1,38 @@
+name: deploy
+on:
+  push:
+    tags:
+      - "v*"
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [1.21]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    name: Deploy app to Heroku
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Export Module Name
+        id: export_module_name
+        run: echo "MODULE_NAME=$(go mod edit -json | jq -r '.Module.Path')" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.13.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_USER_EMAIL }}
+          rollbackonhealthcheckfailed: true
+          usedocker: true
+
+      - name: Update code documentation
+        run: curl -fsSL https://proxy.golang.org/${{ steps.export_module_name.outputs.MODULE_NAME }}/@v/${{ github.ref_name }}.info

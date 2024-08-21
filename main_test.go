@@ -14,17 +14,22 @@ import (
 	"github.com/sarumaj/edu-taschenrechner/pkg/ui"
 )
 
+var (
+	_ *widget.Label
+	_ *widget.Button
+)
+
 // InitializeScenario is being used to set up the feature steps.
 func InitializeScenario(sc *godog.ScenarioContext) {
 	// used to store and retrieve values in context.Context
 	type appInstanceKey string
 
 	// used to verify test step input
-	validButtonListRegex := regexp.MustCompile(`^(?:[0-9\+-×÷=\.]|AC|\(\)|<x)(?:\s(?:[0-9\+-×÷=\.]|AC|\(\)|<x))*$`)
+	validButtonListRegex := regexp.MustCompile(`^(?:[0-9\+-×÷=\.]|AC|\(\)|<x)(?:\s(?:[0-9\+-×÷=\.]|AC|\(\))|<x)*$`)
 
 	// static errors to be reused
 	taschenrechnerNotReadyErr := errors.New("start Taschenrechner first")
-	labelNotFoundErr := errors.New("label not found")
+	displayNotFoundErr := errors.New("display not found")
 
 	// setup app instance and build window content
 	sc.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
@@ -58,7 +63,7 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 				}
 
 				// assert it is really a button with a defined click action
-				btn, ok := object.(*widget.Button)
+				btn, ok := object.(*ui.Button)
 				if ok && btn.OnTapped != nil {
 					btn.OnTapped() // click
 					continue
@@ -82,15 +87,15 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 				return ctx, taschenrechnerNotReadyErr
 			}
 
-			// get label used as display
-			label, ok := app.Objects["label"].(*widget.Label)
+			// get display used as display
+			display, ok := app.Objects["display"].(*ui.Display)
 			if !ok {
-				return ctx, labelNotFoundErr
+				return ctx, displayNotFoundErr
 			}
 
 			// compare display state with the desired one
-			if result != label.Text {
-				return ctx, fmt.Errorf("invalid result, got: %q, expected: %q", label.Text, result)
+			if result != display.Text {
+				return ctx, fmt.Errorf("invalid result, got: %q, expected: %q", display.Text, result)
 			}
 
 			return ctx, nil
