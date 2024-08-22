@@ -2,8 +2,8 @@ package runes
 
 import "testing"
 
-func TestExampleForInput(t *testing.T) {
-	input := NewInput("")
+func TestExampleFor_Sequence(t *testing.T) {
+	input := NewSequence("")
 
 	t.Run("Append", func(t *testing.T) {
 		args := "world!"
@@ -38,6 +38,7 @@ func TestExampleForInput(t *testing.T) {
 	})
 
 	t.Run("Delete", func(t *testing.T) {
+		// cspell: disable-next-line
 		want := "ello, world"
 
 		input.Delete()
@@ -48,6 +49,7 @@ func TestExampleForInput(t *testing.T) {
 	})
 
 	t.Run("Shift", func(t *testing.T) {
+		// cspell: disable-next-line
 		want := "ello, worl"
 
 		got := input.Shift().String()

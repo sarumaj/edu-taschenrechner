@@ -60,15 +60,14 @@ To setup similar project follow following steps:
 - [test suite for entrypoint main_test.go](main_test.go)
 - [module file go.mod](go.mod)
 - [package pkg](pkg)
-  - [package eval](pkg/eval)
-    - [code file cursor.go](pkg/eval/cursor.go)
-    - [unit test file eval_test.go](pkg/eval/eval_test.go)
-    - [code file eval.go](pkg/eval/eval.go)
+  - [package cursor](pkg/cursor)
+    - [unit test file cursor_test.go](pkg/cursor/cursor_test.go)
+    - [code file cursor.go](pkg/cursor/cursor.go)
   - [package memory](pkg/memory)
     - [code file memory.go](pkg/memory/memory.go)
   - [package runes](pkg/runes)
-    - [unit test file input_test.go](pkg/runes/input_test.go)
-    - [code file input.go](pkg/runes/input.go)
+    - [unit test file sequence_test.go](pkg/runes/sequence_test.go)
+    - [code file sequence.go](pkg/runes/sequence.go)
     - [code file utils.go](pkg/runes/utils.go)
   - [package ui](pkg/ui)
     - [code file app.go](pkg/ui/app.go)
@@ -94,9 +93,9 @@ The app utilizes following frameworks:
 
 As for the BDT testing the [Cucumber](https://cucumber.io) framework and its Go implementation ([Godog](https://github.com/cucumber/godog)) are being used.
 
-The [unit test file input_test.go](pkg/runes/input_test.go) provides an example on how to write context-aware and well documented unit tests.
+The [unit test file sequence_test.go](pkg/runes/sequence_test.go) provides an example on how to write context-aware and well documented unit tests.
 
-The [unit test file eval_test.go](pkg/eval/eval_test.go) provides an example on how to write context-aware and compact unit tests (reduced number of lines).
+The [unit test file cursor_test.go](pkg/cursor/cursor_test.go) provides an example on how to write context-aware and compact unit tests (reduced number of lines).
 
 The [test suite for entrypoint main_test.go](main_test.go) defines the feature steps parsed by the test engine:
 

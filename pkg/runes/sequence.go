@@ -1,17 +1,17 @@
 package runes
 
-// Input is used to ease processing user interactions
-type Input []rune
+// Sequence is used to ease processing user interactions
+type Sequence []rune
 
 // Append writes content at the end.
-func (i *Input) Append(r string) {
+func (i *Sequence) Append(r string) {
 	for _, c := range r {
 		*i = append(*i, c)
 	}
 }
 
-// Back provides a closure to iterate over input runes in reserved order.
-func (i Input) Back() func() (int, rune) {
+// Back provides a closure to iterate over runes in reserved order.
+func (i Sequence) Back() func() (int, rune) {
 	current := len(i) - 1
 
 	return func() (int, rune) {
@@ -26,14 +26,14 @@ func (i Input) Back() func() (int, rune) {
 }
 
 // Backspace removes last rune.
-func (i *Input) Backspace() {
+func (i *Sequence) Backspace() {
 	if len(*i) > 0 {
 		*i = (*i)[: len(*i)-1 : len(*i)-1]
 	}
 }
 
-// BeginsWith checks whether input runes begin with given sequence.
-func (i Input) BeginsWith(r string) bool {
+// BeginsWith checks whether runes begin with given sequence.
+func (i Sequence) BeginsWith(r string) bool {
 	if len(i) < len([]rune(r)) {
 		return false
 	}
@@ -48,26 +48,26 @@ func (i Input) BeginsWith(r string) bool {
 }
 
 // Clear removes all runes one by one.
-func (i *Input) Clear() {
+func (i *Sequence) Clear() {
 	for len(*i) > 0 {
 		*i = (*i)[: len(*i)-1 : len(*i)-1]
 	}
 }
 
-// Delete removes the first rune in the input runes.
-func (i *Input) Delete() {
+// Delete removes the first rune in the runes.
+func (i *Sequence) Delete() {
 	if len(*i) > 0 {
 		*i = (*i)[1:len(*i):len(*i)]
 	}
 }
 
-// Contains checks whether the input runes contain given sequence.
-func (i Input) Contains(r string) bool {
+// Contains checks whether the runes contain given sequence.
+func (i Sequence) Contains(r string) bool {
 	return i.Index(r) >= 0
 }
 
-// EndsWith checks whether the input runes end with given sequence.
-func (i Input) EndsWith(r string) bool {
+// EndsWith checks whether the runes end with given sequence.
+func (i Sequence) EndsWith(r string) bool {
 	if len(i) < len([]rune(r)) {
 		return false
 	}
@@ -83,7 +83,7 @@ func (i Input) EndsWith(r string) bool {
 }
 
 // Equals checks
-func (i Input) Equals(r string) bool {
+func (i Sequence) Equals(r string) bool {
 	if len(i) != len([]rune(r)) {
 		return false
 	}
@@ -97,9 +97,9 @@ func (i Input) Equals(r string) bool {
 	return true
 }
 
-// First returns the foremost rune from the input runes.
-// If input runes are empty, it returns -1.
-func (i Input) First() rune {
+// First returns the foremost rune from the runes.
+// If runes are empty, it returns -1.
+func (i Sequence) First() rune {
 	if len(i) > 0 {
 		return i[0]
 	}
@@ -107,8 +107,8 @@ func (i Input) First() rune {
 	return -1
 }
 
-// Forward returns a closure to iterate over input runes from the beginning to the end.
-func (i Input) Forward() func() (int, rune) {
+// Forward returns a closure to iterate over runes from the beginning to the end.
+func (i Sequence) Forward() func() (int, rune) {
 	current := 0
 
 	return func() (int, rune) {
@@ -123,8 +123,8 @@ func (i Input) Forward() func() (int, rune) {
 }
 
 // Index returns the first index at which given sequence occurs.
-// If the input runes do not contain the sequence, it returns -1.
-func (i Input) Index(r string) int {
+// If the runes do not contain the sequence, it returns -1.
+func (i Sequence) Index(r string) int {
 	if len(i) < len([]rune(r)) {
 		return -1
 	}
@@ -145,9 +145,9 @@ func (i Input) Index(r string) int {
 	return -1
 }
 
-// Last returns the last rune from the input runes.
-// If input runes are empty, it returns -1.
-func (i Input) Last() rune {
+// Last returns the last rune from the runes.
+// If runes are empty, it returns -1.
+func (i Sequence) Last() rune {
 	if len(i) > 0 {
 		return i[len(i)-1]
 	}
@@ -156,8 +156,8 @@ func (i Input) Last() rune {
 }
 
 // LastIndex returns the last index at which given sequence occurs.
-// If the input runes do not contain the sequence, it returns -1.
-func (i Input) LastIndex(r string) int {
+// If the runes do not contain the sequence, it returns -1.
+func (i Sequence) LastIndex(r string) int {
 	if len(i) < len([]rune(r)) {
 		return -1
 	}
@@ -179,30 +179,30 @@ func (i Input) LastIndex(r string) int {
 	return -1
 }
 
-// Prepend adds sequence at the beginning of the input sequence.
-func (i *Input) Prepend(r string) {
+// Prepend adds sequence at the beginning of the sequence.
+func (i *Sequence) Prepend(r string) {
 	p := make([]rune, len([]rune(r)))
 	_ = copy(p, []rune(r))
 	*i = append(p, (*i)...)
 }
 
-// Shift moves one rune from the end of the input runes and returns a shortened sequence of runes.
-func (i Input) Shift() *Input {
-	var v Input
+// Shift moves one rune from the end of the runes and returns a shortened sequence of runes.
+func (i Sequence) Shift() *Sequence {
+	var v Sequence
 	if len(i) > 0 {
-		v = make(Input, len(i)-1)
+		v = make(Sequence, len(i)-1)
 		_ = copy(v, i[:len(i)-1:len(i)-1])
 	}
 	return &v
 }
 
-// String converts input runes into a string.
-func (i Input) String() string {
+// String converts runes into a string.
+func (i Sequence) String() string {
 	return string([]rune(i))
 }
 
-// NewInput creates new input runes from a string.
-func NewInput(str string) *Input {
-	i := Input([]rune(str))
+// NewSequence creates new runes from a string.
+func NewSequence(str string) *Sequence {
+	i := Sequence([]rune(str))
 	return &i
 }

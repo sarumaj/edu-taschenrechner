@@ -3,7 +3,9 @@ package ui
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
+	"github.com/sarumaj/edu-taschenrechner/pkg/cursor"
 	"github.com/sarumaj/edu-taschenrechner/pkg/memory"
+	"github.com/sarumaj/edu-taschenrechner/pkg/runes"
 )
 
 // Display is a custom label widget that extends the default label with a memory cell.
@@ -15,6 +17,11 @@ type Display struct {
 // CreateRenderer returns a custom renderer for the Display widget.
 func (m *Display) CreateRenderer() fyne.WidgetRenderer {
 	return &DisplayRenderer{WidgetRenderer: m.Label.CreateRenderer()}
+}
+
+// SetText sets the text of the display widget.
+func (m *Display) SetText(text string) {
+	m.Label.SetText(cursor.Do(text, runes.NewSequence(m.Text), m.MemoryCell).String())
 }
 
 // DisplayRenderer is a custom renderer for the Display widget.

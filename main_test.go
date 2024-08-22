@@ -104,7 +104,7 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 
 }
 
-func TestFeatures(t *testing.T) {
+func TestExampleFor_BDT(t *testing.T) {
 	suite := godog.TestSuite{
 		ScenarioInitializer: InitializeScenario, // step definitions & setup of test app instance
 		Options: &godog.Options{

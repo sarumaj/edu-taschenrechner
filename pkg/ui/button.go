@@ -4,8 +4,6 @@ import (
 	"fyne.io/fyne/driver/mobile"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
-	"github.com/sarumaj/edu-taschenrechner/pkg/eval"
-	"github.com/sarumaj/edu-taschenrechner/pkg/runes"
 )
 
 // Custom button widget that implements the Touchable interface for future usage on mobile devices.
@@ -30,12 +28,8 @@ type buttonRenderer struct{ fyne.WidgetRenderer }
 // Create a new button widget with the given text and tapped function.
 func NewButton(text string, display *Display) *Button {
 	btn := &Button{Button: widget.Button{
-		Text: text,
-		OnTapped: func() {
-			input := runes.NewInput(display.Text)
-			eval.Evaluate(text, input, display.MemoryCell)
-			display.SetText(input.String())
-		},
+		Text:     text,
+		OnTapped: func() { display.SetText(text) },
 	}}
 	btn.ExtendBaseWidget(btn)
 	return btn

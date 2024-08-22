@@ -30,8 +30,8 @@ func IsValid(r rune) bool {
 	return r >= 0 && r < int32(1<<31-1)
 }
 
-// HowManyOpen returns the number of not closed brackets in the input runes.
-func HowManyOpen(text *Input) int {
+// HowManyOpen returns the number of not closed brackets in the Sequence runes.
+func HowManyOpen(text *Sequence) int {
 	back, cnt := text.Back(), 0
 	for _, b := back(); b >= 0; _, b = back() {
 		switch b {
@@ -45,9 +45,9 @@ func HowManyOpen(text *Input) int {
 	return cnt
 }
 
-// IsDotted verifies the last consecutive sequence of digits contained in the input runes
+// IsDotted verifies the last consecutive sequence of digits contained in the Sequence runes
 // upon the existence of a decimal floating point.
-func IsDotted(text *Input) bool {
+func IsDotted(text *Sequence) bool {
 	back := text.Back()
 	for _, b := back(); b > 0; _, b = back() {
 		if b == '.' {
