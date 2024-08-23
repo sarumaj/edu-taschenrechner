@@ -9,6 +9,15 @@ func Each(str string) (out []string) {
 	return out
 }
 
+// InRange checks if a rune is within a given range.
+func InRange(r rune, min, max rune) bool {
+	if min > max {
+		min, max = max, min
+	}
+
+	return r >= min && r <= max
+}
+
 // IsAnyOf reports if given rune is within provided sequence.
 func IsAnyOf(r rune, o string) bool {
 	for _, c := range o {
@@ -22,7 +31,7 @@ func IsAnyOf(r rune, o string) bool {
 
 // IsDigit determines if a rune is a digit.
 func IsDigit(r rune) bool {
-	return r <= '9' && r >= '0'
+	return r >= '0' && r <= '9'
 }
 
 // IsValid checks if the rune is in valid unicode point range 0 < x < 2_147_483_647.
