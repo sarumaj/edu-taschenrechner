@@ -9,14 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"fyne.io/fyne/v2/widget"
 	"github.com/cucumber/godog"
 	"github.com/sarumaj/edu-taschenrechner/pkg/ui"
-)
-
-var (
-	_ *widget.Label
-	_ *widget.Button
 )
 
 // InitializeScenario is being used to set up the feature steps.

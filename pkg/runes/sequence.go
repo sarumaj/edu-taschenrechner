@@ -15,7 +15,6 @@ func (i Sequence) Back() func() (int, rune) {
 	current := len(i) - 1
 
 	return func() (int, rune) {
-
 		if current >= 0 {
 			defer func() { current-- }()
 			return current, i[current]

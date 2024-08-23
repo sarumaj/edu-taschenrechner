@@ -6,7 +6,6 @@ require (
 	fyne.io/fyne v1.4.3
 	fyne.io/fyne/v2 v2.5.0
 	github.com/cucumber/godog v0.14.0
-	github.com/maja42/goval v1.4.0
 )
 
 require (

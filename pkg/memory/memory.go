@@ -1,26 +1,30 @@
 package memory
 
 import (
+	"math/big"
 	"sync"
 )
 
 // Make sure *memoryCell implements MemoryCell
-var _ MemoryCell = &memoryCell{}
+var _ MemoryCell = &memoryCell[*big.Float]{}
 
-// MemoryCell is an invisible CanvasObject for storing and retrieving anything.
-type MemoryCell interface {
-	Get() any
-	Set(any) error
+// MemoryCell is an interface for storing and retrieving big floating point numbers.
+type MemoryCell = MemoryCellInterface[*big.Float]
+
+// MemoryCellInterface is a generic interface for storing and retrieving anything.
+type MemoryCellInterface[T any] interface {
+	Get() T
+	Set(T) error
 }
 
-// *memoryCell will implement MemoryCell
-type memoryCell struct {
+// *memoryCell will implement MemoryCellInterface for any type T.
+type memoryCell[T any] struct {
 	sync.Mutex
-	value any
+	value T
 }
 
 // Get retrieves the value from the memory cell.
-func (m *memoryCell) Get() any {
+func (m *memoryCell[T]) Get() T {
 	m.Lock()
 	defer m.Unlock()
 
@@ -28,7 +32,7 @@ func (m *memoryCell) Get() any {
 }
 
 // Set stores the value in the memory cell.
-func (m *memoryCell) Set(value any) error {
+func (m *memoryCell[T]) Set(value T) error {
 	m.Lock()
 	defer m.Unlock()
 
@@ -38,4 +42,7 @@ func (m *memoryCell) Set(value any) error {
 }
 
 // NewMemoryCell creates a new MemoryCell object.
-func NewMemoryCell() MemoryCell { return &memoryCell{} }
+func NewMemoryCell() MemoryCell { return NewGenericMemoryCell[*big.Float]() }
+
+// NewGenericMemoryCell creates a new MemoryCell object with a generic type.
+func NewGenericMemoryCell[T any]() MemoryCellInterface[T] { return &memoryCell[T]{} }

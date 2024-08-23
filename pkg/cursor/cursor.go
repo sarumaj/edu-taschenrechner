@@ -3,10 +3,11 @@ package cursor
 import (
 	"fmt"
 	"math"
+	"math/big"
 	"strings"
 
-	"github.com/maja42/goval"
 	"github.com/sarumaj/edu-taschenrechner/pkg/memory"
+	"github.com/sarumaj/edu-taschenrechner/pkg/parser"
 	"github.com/sarumaj/edu-taschenrechner/pkg/runes"
 )
 
@@ -220,26 +221,20 @@ func (c *cursor) Equals() Cursor {
 	}
 
 	// evaluate input text
-	result, err := goval.NewEvaluator().Evaluate(
-		// replace operators
-		strings.NewReplacer("×", "*", "÷", "/").Replace(
-			"save("+ // save to memory cell
-				"1.0*"+ // enforce decimal result
-				c.text.String()+
-				")",
-		),
-		// define variables
-		map[string]any{"ANS": c.memory.Get()},
-		// define functions
-		map[string]func(args ...any) (any, error){
-			"save": func(args ...any) (any, error) {
-				if err := c.memory.Set(args[0]); err != nil {
-					return nil, err
-				}
-				return c.memory.Get(), nil
-			},
-		},
-	)
+	result, err := parser.NewParser(
+		parser.WithVar("ANS", c.memory.Get()),
+		parser.WithFunc("save", func(args ...*big.Float) (*big.Float, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("save function requires exactly 1 argument")
+			}
+
+			if err := c.memory.Set(args[0]); err != nil {
+				return nil, err
+			}
+
+			return c.memory.Get(), nil
+		}),
+	).Parse(strings.NewReplacer("×", "*", "÷", "/").Replace("save(" + c.text.String() + ")"))
 
 	// handle error
 	if err != nil {
@@ -248,7 +243,7 @@ func (c *cursor) Equals() Cursor {
 
 	// display result
 	c.text.Clear()
-	c.text.Append(fmt.Sprint(result))
+	c.text.Append(result.Text('g', -1))
 	return c
 }
 

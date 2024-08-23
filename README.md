@@ -65,6 +65,12 @@ To setup similar project follow following steps:
     - [code file cursor.go](pkg/cursor/cursor.go)
   - [package memory](pkg/memory)
     - [code file memory.go](pkg/memory/memory.go)
+  - [package parser](pkg/parser)
+    - [code file node.go](pkg/parser/node.go)
+    - [unit test file parse_test.go](pkg/parser/parse_test.go)
+    - [code file parse.go](pkg/parser/parse.go)
+    - [unit test file tokens_test.go](pkg/parser/tokens_test.go)
+    - [code file tokens.go](pkg/parser/tokens.go)
   - [package runes](pkg/runes)
     - [unit test file sequence_test.go](pkg/runes/sequence_test.go)
     - [code file sequence.go](pkg/runes/sequence.go)
@@ -89,13 +95,13 @@ The [application entrypoint](main.go) makes use of the [package ui](pkg/ui). The
 The app utilizes following frameworks:
 
 - [Fyne](https://fyne.io) for frontend development
-- [Goval](github.com/maja42/goval) to parse and evaluate arithmetic expressions in the backend
+- ~~[Goval](github.com/maja42/goval) to parse and evaluate arithmetic expressions in the backend~~
 
 As for the BDT testing the [Cucumber](https://cucumber.io) framework and its Go implementation ([Godog](https://github.com/cucumber/godog)) are being used.
 
 The [unit test file sequence_test.go](pkg/runes/sequence_test.go) provides an example on how to write context-aware and well documented unit tests.
 
-The [unit test file cursor_test.go](pkg/cursor/cursor_test.go) provides an example on how to write context-aware and compact unit tests (reduced number of lines).
+The [unit test file cursor_test.go](pkg/cursor/cursor_test.go), [unit test file parse_test.go](pkg/parser/parse_test.go), or [unit test file tokens_test.go](pkg/parser/tokens_test.go) provide examples on how to write context-aware and compact unit tests (reduced number of lines).
 
 The [test suite for entrypoint main_test.go](main_test.go) defines the feature steps parsed by the test engine:
 
@@ -103,3 +109,31 @@ The [test suite for entrypoint main_test.go](main_test.go) defines the feature s
 - `^I get following result: "([^"]*)"$`
 
 The [BDT feature file example.feature](go-test/features/example.feature) defines few test scenarios making use of the aforementioned feature steps.
+
+## Questionary
+
+Analyze this project and answer following questions:
+
+1. Testing
+   1. How do the unit tests work?
+   2. What advantages does BDT bring about? How is BDT set up for this project?
+   3. How to increase test coverage, without increasing maintenance effort and code complexity?
+2. Data Models
+   1. What are linked lists or trees? How is a linked tree used for parsing in this project?
+   2. What are interfaces and what are they good for? How are they used in this project?
+   3. Where do we use generics?
+3. Design Patterns and Coding Style
+   1. Find and explain: Return Early Pattern.
+   2. Find and explain: Method Chaining.
+   3. Find and explain: Object Abstraction and Object Oriented Programming (OOP).
+   4. Find and explain: Dependency/Configuration Injection.
+4. Logic
+   1. How does the lexical parser work? What does a tokenizer do?
+   2. What does the cursor do? How does it work?
+   3. What is the memory cell for? How does it work?
+5. UI and Deployment
+   1. Hos is the UI set up?
+   2. How to compile the project?
+6. Documentation
+   1. How to document a function? A custom type?
+   2. How to publish code documentation?
