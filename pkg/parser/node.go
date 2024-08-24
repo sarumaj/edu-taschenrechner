@@ -2,7 +2,10 @@ package parser
 
 import (
 	"fmt"
+	"math"
 	"math/big"
+
+	"github.com/sarumaj/edu-taschenrechner/pkg/calc"
 )
 
 // make sure that the node type implements the Node interface
@@ -63,31 +66,70 @@ func (node *node) Evaluate(p *parser) (*big.Float, error) {
 		return fn(args...)
 	}
 
+	if node.Left() == nil {
+		return nil, fmt.Errorf("missing left operand for operator %s", node.value)
+	}
+
+	// Evaluate the left subtree
 	left, err := node.Left().Evaluate(p)
 	if err != nil {
 		return nil, err
 	}
 
+	// Handle unary operators
+	switch node.Value() {
+	case "!": // Factorial
+		left, err = calc.Factorial(left, 1)
+		if err != nil {
+			return nil, err
+		}
+
+	case "°": // Convert the result from degrees to radians
+		left = big.NewFloat(0).Mul(left, big.NewFloat(0).Quo(big.NewFloat(math.Pi), big.NewFloat(180)))
+
+	case "√": // Square root
+		if left.Cmp(big.NewFloat(0)) < 0 {
+			return nil, fmt.Errorf("square root of a negative number")
+		}
+		left = big.NewFloat(0).Sqrt(left)
+
+	case "-": // Unary minus
+		if node.Right() == nil {
+			return big.NewFloat(0).Neg(left), nil
+		}
+
+	}
+
+	// If there is no right node, return the result
+	if node.Right() == nil {
+		return left, nil
+	}
+
+	// Evaluate the right subtree
 	right, err := node.Right().Evaluate(p)
 	if err != nil {
 		return nil, err
 	}
 
-	switch zero := big.NewFloat(0); node.Value() {
-	case "+":
-		return zero.Add(left, right), nil
+	// Handle binary operators
+	switch node.Value() {
+	case "+": // Addition
+		return big.NewFloat(0).Add(left, right), nil
 
-	case "-":
-		return zero.Sub(left, right), nil
+	case "-": // Subtraction
+		return big.NewFloat(0).Sub(left, right), nil
 
-	case "*":
-		return zero.Mul(left, right), nil
+	case "*": // Multiplication
+		return big.NewFloat(0).Mul(left, right), nil
 
-	case "/":
-		if right.Cmp(zero) == 0 {
+	case "/": // Division
+		if right.Cmp(big.NewFloat(0)) == 0 {
 			return nil, fmt.Errorf("division by zero")
 		}
-		return zero.Quo(left, right), nil
+		return big.NewFloat(0).Quo(left, right), nil
+
+	case "^": // Exponentiation
+		return calc.Pow(left, right)
 
 	default:
 		return nil, fmt.Errorf("unsupported operator: %s", node.value)

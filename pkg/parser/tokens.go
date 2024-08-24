@@ -40,6 +40,7 @@ func (tokens *tokens) len() int {
 
 // parseExpr parses an expression and returns the root node of the parse tree
 func (tokens *tokens) parseExpr() (Node, error) {
+	// parse addition and subtraction first
 	node, err := tokens.parseAddSub()
 	if err != nil {
 		return nil, err
@@ -112,10 +113,12 @@ func (tokens *tokens) parseFactor() (Node, error) {
 		return nil, fmt.Errorf("unexpected end of expression")
 	}
 
+	var node Node // the node to return
+
 	// consume the token
 	switch token := tokens.consume(); {
 	case token == "(": // Handle sub-expression
-		node, err := tokens.parseExpr()
+		subExprNode, err := tokens.parseExpr()
 		if err != nil {
 			return nil, err
 		}
@@ -125,15 +128,23 @@ func (tokens *tokens) parseFactor() (Node, error) {
 		}
 
 		_ = tokens.consume() // consume the ')'
-		return node, nil
+		node = subExprNode
 
 	case token == "-": // Handle unary minus
-		node, err := tokens.parseFactor()
+		subNode, err := tokens.parseFactor()
 		if err != nil {
 			return nil, err
 		}
 
-		return NewNode("-").SetLeft(NewNode("0")).SetRight(node), nil
+		node = NewNode("-").SetLeft(NewNode("0")).SetRight(subNode)
+
+	case token == "√": // Handle square root
+		subNode, err := tokens.parseFactor() // Parse the operand
+		if err != nil {
+			return nil, err
+		}
+
+		node = NewNode("√").SetLeft(subNode)
 
 	case tokens.len() > 0 && tokens.peek() == "(": // Handle function call
 		_ = tokens.consume() // consume the '('
@@ -167,12 +178,30 @@ func (tokens *tokens) parseFactor() (Node, error) {
 
 		// token is the function name
 		// arguments are linked as a list in the left child of the function node
-		return NewNode(token).SetLeft(argsNode), nil
+		node = NewNode(token).SetLeft(argsNode)
 
 	default: // Handle any other token
-		return NewNode(token), nil
-
+		node = NewNode(token)
 	}
+
+	// Check for exponentiation operator
+	if tokens.len() > 0 && tokens.peek() == "^" {
+		token := tokens.consume()              // consume the '^'
+		rightNode, err := tokens.parseFactor() // Parse the exponent
+		if err != nil {
+			return nil, err
+		}
+
+		node = NewNode(token).SetLeft(node).SetRight(rightNode)
+	}
+
+	// Check if the next token is a factorial operator or a degree operator
+	for tokens.len() > 0 && (tokens.peek() == "!" || tokens.peek() == "°") {
+		token := tokens.consume() // consume the "!" or "°"
+		node = NewNode(token).SetLeft(node)
+	}
+
+	return node, nil
 }
 
 // peek returns the next token in the list without consuming it.
@@ -214,14 +243,22 @@ func Tokenize(expr string) (Tokens, error) {
 		switch ch := []rune(expr)[i]; {
 		case ch == ' ': // Skip whitespace
 
-		case
-			runes.IsDigit(ch), ch == '.', // Handle numbers (including floating point)
-			// Handle letters (for variable names and function names)
+		case runes.IsDigit(ch), ch == '.': // Handle numbers (including floating point)
+			token.WriteRune(ch)
+
+		case // Handle letters (for variable names and function names or units)
 			runes.InRange(ch, 'a', 'z'), runes.InRange(ch, 'A', 'Z'), ch == '_', i > 0 && runes.IsDigit(ch):
 
-			_, _ = token.WriteRune(ch)
+			// If we have a number accumulated, append it as a token first
+			if token.Len() > 0 && (runes.IsDigit(rune(token.String()[token.Len()-1])) || token.String() == ".") {
+				tokens.append(token.String())
+				token.Reset()
+			}
 
-		case runes.IsAnyOf(ch, "(),+-*/"): // Handle operators and parentheses
+			// Accumulate letters into the current token
+			token.WriteRune(ch)
+
+		case runes.IsAnyOf(ch, "(),+-*/!√^°"): // Handle operators, parentheses, and the degree symbol
 			if token.Len() > 0 {
 				tokens.append(token.String())
 				token.Reset()

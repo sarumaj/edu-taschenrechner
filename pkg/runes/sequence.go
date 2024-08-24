@@ -65,6 +65,13 @@ func (i Sequence) Contains(r string) bool {
 	return i.Index(r) >= 0
 }
 
+// Copy creates a copy of the runes.
+func (i Sequence) Copy() Sequence {
+	v := make(Sequence, len(i))
+	_ = copy(v, i)
+	return v
+}
+
 // EndsWith checks whether the runes end with given sequence.
 func (i Sequence) EndsWith(r string) bool {
 	if len(i) < len([]rune(r)) {

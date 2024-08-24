@@ -34,6 +34,16 @@ func IsDigit(r rune) bool {
 	return r >= '0' && r <= '9'
 }
 
+// IsLetter determines if a rune is a letter.
+func IsLetter(r rune) bool {
+	return InRange(r, 'a', 'z') || InRange(r, 'A', 'Z')
+}
+
+// IsWord determines if a rune is a word character.
+func IsWord(r rune) bool {
+	return IsDigit(r) || IsLetter(r) || r == '_'
+}
+
 // IsValid checks if the rune is in valid unicode point range 0 < x < 2_147_483_647.
 func IsValid(r rune) bool {
 	return r >= 0 && r < int32(1<<31-1)
