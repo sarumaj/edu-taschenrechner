@@ -10,7 +10,7 @@ RUN go mod download && go mod verify
 
 COPY . .
 
-RUN fyne package -os web -icon ./app.ico
+RUN fyne package -os web -icon ./pkg/ui/icons/app.ico
 
 # production image
 FROM nginx:alpine AS final

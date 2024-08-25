@@ -18,6 +18,8 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 	// used to store and retrieve values in context.Context
 	type appInstanceKey string
 
+	ui.Interactive = false // disable user interaction
+
 	// used to verify test step input
 	validButtonListRegex := regexp.MustCompile(`^(?:[0-9\+-×÷=\.]|AC|\(\)|<x)(?:\s(?:[0-9\+-×÷=\.]|AC|\(\))|<x)*$`)
 
@@ -49,8 +51,9 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 			}
 
 			// retrieve buttons and mock up clicks
+			objects := app.Objects()
 			for _, btnId := range strings.Split(button_list, " ") {
-				object, ok := app.Objects[btnId]
+				object, ok := objects[btnId]
 				if !ok {
 					// uppsala, something went wrong
 					return ctx, fmt.Errorf("object %q not found", btnId)
@@ -82,14 +85,14 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 			}
 
 			// get display used as display
-			display, ok := app.Objects["display"].(*ui.Display)
+			display, ok := app.Objects()["display"].(*ui.Display)
 			if !ok {
 				return ctx, displayNotFoundErr
 			}
 
 			// compare display state with the desired one
-			if result != display.Text {
-				return ctx, fmt.Errorf("invalid result, got: %q, expected: %q", display.Text, result)
+			if result != display.GetText() {
+				return ctx, fmt.Errorf("invalid result, got: %q, expected: %q", display.GetText(), result)
 			}
 
 			return ctx, nil

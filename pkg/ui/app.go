@@ -1,89 +1,183 @@
+/*
+Package ui provides a user interface for the calculator.
+The calculator can be used to perform basic arithmetic operations.
+
+Example:
+
+	app := ui.NewApp("Calculator")
+	app.Build()
+	app.ShowAndRun()
+*/
 package ui
 
 import (
+	"context"
+	"fmt"
+	"math"
+	"math/big"
 	"sync"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
+	"github.com/sarumaj/edu-taschenrechner/pkg/calc"
+	"github.com/sarumaj/edu-taschenrechner/pkg/memory"
+	"github.com/sarumaj/edu-taschenrechner/pkg/parser"
 	"github.com/sarumaj/edu-taschenrechner/pkg/runes"
 )
+
+const (
+	githubLink   = "https://github.com/sarumaj/edu-taschenrechner"
+	linkedinLink = "https://www.linkedin.com/in/dawid-ciepiela"
+)
+
+// Interactive is a flag to enable/disable interactive mode.
+// Used for tests to disable user interaction.
+var Interactive bool = true
 
 // App is a custom interface for bringing up the application window.
 type App struct {
 	sync.Once
 	fyne.App
 	fyne.Window
-	Objects map[string]fyne.CanvasObject
+	fyne.Theme
+	memory.MemoryCell
+	changeListener chan fyne.Settings
+	objects        ObjectStorage
 }
 
 // Build renders the application window and sets up all widgets.
 func (a *App) Build() {
 	a.Do(func() {
-		a.Objects = make(map[string]fyne.CanvasObject)
+		// define options for parser
+		options := []parser.Option{
+			parser.WithVar("ANS", a.MemoryCell.Get),
+			parser.WithConst("PI", big.NewFloat(math.Pi)),
+			parser.WithConst("E", big.NewFloat(math.E)),
+			parser.WithFunc("save", func(arg *big.Float) (*big.Float, error) {
+				if err := a.MemoryCell.Set(arg); err != nil {
+					return nil, err
+				}
+				return a.MemoryCell.Get(), nil
+			}),
+			parser.WithFunc("sin", math.Sin),
+			parser.WithFunc("cos", math.Cos),
+			parser.WithFunc("tan", math.Tan),
+			parser.WithFunc("arcsin", func(f float64) (float64, error) {
+				if f < -1 || f > 1 {
+					return 0, fmt.Errorf("arcsin(%g) is undefined", f)
+				}
+				return math.Asin(f), nil
+			}),
+			parser.WithFunc("arccos", func(f float64) (float64, error) {
+				if f < -1 || f > 1 {
+					return 0, fmt.Errorf("arccos(%g) is undefined", f)
+				}
+				return math.Acos(f), nil
+			}),
+			parser.WithFunc("arctan", math.Atan),
+			parser.WithFunc("log", func(f float64) (float64, error) {
+				if f <= 0 {
+					return 0, fmt.Errorf("log(%g) is undefined", f)
+				}
+				return math.Log10(f), nil
+			}),
+			parser.WithFunc("ln", func(f float64) (float64, error) {
+				if f <= 0 {
+					return 0, fmt.Errorf("ln(%g) is undefined", f)
+				}
+				return math.Log(f), nil
+			}),
+			parser.WithFunc("gdc", func(x, y *big.Float) (*big.Float, error) {
+				return calc.GreatestCommonDivisor(context.Background(), x, y)
+			}),
+			parser.WithFunc("lcm", func(x, y *big.Float) (*big.Float, error) {
+				return calc.LeastCommonMultiple(context.Background(), x, y)
+			}),
+			parser.WithReplacements("×", "*", "÷", "/", "π", "PI", "e", "E"),
+		}
 
-		// make display
-		a.Objects["display"] = NewDisplay("_", a.Window)
+		// make display using options
+		a.objects["display"] = NewDisplay("_", options...)
 
-		// make buttons
-		for _, btnText := range append(runes.Each("1234567890+-×÷=.√π^!e°"), "AC", "()", "<x", "sin", "cos", "tan", "log", "ln") {
-			a.Objects[btnText] = NewButton(btnText, a.Objects["display"]).SetAlternateText(map[string]string{
-				"√":   "x²",
-				"sin": "sin⁻¹",
-				"cos": "cos⁻¹",
-				"tan": "tan⁻¹",
-				"log": "10^",
-				"ln":  "e^",
-				"°":   "1/°",
-			}[btnText])
+		// make buttons (some with alternate text)
+		for _, btnText := range append(runes.Each("1234567890+-×÷=.π!e°√"),
+			"xⁿ", "AC", "()", "↩",
+			"sin", "cos", "tan", "log", "ln", "gdc") {
+
+			a.objects[btnText] = NewButton(btnText, a.objects.SelectDisplay("display")).
+				SetAlternateText(map[string]string{
+					"√":   "x²",
+					"sin": "sin⁻¹",
+					"cos": "cos⁻¹",
+					"tan": "tan⁻¹",
+					"log": "10ⁿ",
+					"ln":  "eⁿ",
+					"°":   "1/°",
+					".":   ",",
+					"gdc": "lcm",
+				}[btnText])
 		}
 
 		// make dropdowns
 		for name, relations := range map[string][]string{
 			"const": {"π", "e"},
-			"func":  {"sin", "cos", "tan", "log", "ln"},
+			"func":  {"sin", "cos", "tan", "log", "ln", "gdc"},
 		} {
-			a.Objects[name] = NewButtonDropDown(a.getButtons(relations...))
+			a.objects[name] = NewButtonDropDown(a.objects.SelectButtons(relations...))
 		}
 
-		a.Objects["INV"] = NewButton("INV", a.Objects["display"]).SetOnTapped(func() {
-			for i := range a.Objects {
-				if o, ok := a.Objects[i].(*Button); ok {
-					o.Invert()
-				}
-			}
+		// make toolbars
+		var actions []widget.ToolbarItem
+		for link, resources := range map[string][]fyne.Resource{
+			githubLink:   {resourceGithubPng, resourceGithubWhitePng},
+			linkedinLink: {resourceLinkedinPng, nil},
+		} {
+			actions = append(actions, NewIcon(link, resources[0], resources[1]).Update())
+		}
+		a.objects["toolbar"] = NewDisplayToolbar(a.objects.SelectDisplay("display"), actions...)
 
-			for i := range a.Objects {
-				if o, ok := a.Objects[i].(*ButtonDropDown); ok {
-					o.Update()
+		// make invert button
+		a.objects["INV"] = NewButton("INV", a.objects.SelectDisplay("display")).SetOnTapped(func() {
+			for i := range a.objects {
+				switch o := a.objects[i].(type) {
+				case *Button:
+					o.Invert()
+
+				case *ButtonDropDown:
+					// Important: call with defer, since the update must occur after all buttons have been inverted
+					defer o.Update()
+
 				}
 			}
 		})
 
 		// lay out the components
-		appContent := container.NewBorder(
-			a.Objects["display"], nil, nil, nil,
-			container.NewGridWithRows(6,
-				container.NewGridWithColumns(3,
-					container.NewGridWithColumns(2, a.getButtons("√", "^")...),
-					container.NewGridWithColumns(2, append(a.getButtons("!"), a.Objects["const"])...),
-					a.Objects["func"],
-				),
+		appContent := container.NewGridWithRows(7,
+			container.NewBorder(
+				nil, nil, nil, a.objects["toolbar"],
+				a.objects["display"],
+			),
+			container.NewGridWithColumns(3,
+				container.NewGridWithColumns(2, a.objects.SelectCanvasObjects("√", "xⁿ")...),
+				container.NewGridWithColumns(2, append(a.objects.SelectCanvasObjects("!"), a.objects["const"])...),
+				a.objects["func"],
+			),
+			container.NewGridWithColumns(2,
+				container.NewGridWithColumns(3, a.objects.SelectCanvasObjects("INV", "AC", "↩")...),
+				container.NewGridWithColumns(2, a.objects.SelectCanvasObjects("()", "÷")...),
+			),
+			container.NewGridWithColumns(4, a.objects.SelectCanvasObjects(runes.Each("789×")...)...),
+			container.NewGridWithColumns(4, a.objects.SelectCanvasObjects(runes.Each("456-")...)...),
+			container.NewGridWithColumns(4, a.objects.SelectCanvasObjects(runes.Each("123+")...)...),
+			container.NewGridWithColumns(2,
 				container.NewGridWithColumns(2,
-					container.NewGridWithColumns(3, a.getButtons("INV", "AC", "<x")...),
-					container.NewGridWithColumns(2, a.getButtons("()", "÷")...),
+					a.objects["0"],
+					container.NewGridWithColumns(2, a.objects.SelectCanvasObjects(runes.Each(".°")...)...),
 				),
-				container.NewGridWithColumns(4, a.getButtons(runes.Each("789×")...)...),
-				container.NewGridWithColumns(4, a.getButtons(runes.Each("456-")...)...),
-				container.NewGridWithColumns(4, a.getButtons(runes.Each("123+")...)...),
-				container.NewGridWithColumns(2,
-					container.NewGridWithColumns(2,
-						a.getButtons("0")[0],
-						container.NewGridWithColumns(2, a.getButtons(runes.Each(".°")...)...),
-					),
-					a.Objects["="],
-				),
+				a.objects["="],
 			),
 		)
 
@@ -92,26 +186,50 @@ func (a *App) Build() {
 	})
 }
 
-// getButtons provides a selector to select buttons..
-func (a *App) getButtons(in ...string) (out []fyne.CanvasObject) {
-	for _, c := range in {
-		switch a.Objects[c].(type) {
-		case *Button:
-			out = append(out, a.Objects[c])
-
+// ShowAndRun displays the application window and starts the event loop.
+func (a *App) ShowAndRun() {
+	go func() {
+		for range a.changeListener {
+			for _, o := range a.objects {
+				switch o := o.(type) {
+				case *Icon:
+					o.Update()
+				}
+			}
 		}
-	}
+	}()
 
-	return
+	a.Window.ShowAndRun()
+}
+
+// Objects returns the objects of the application.
+func (a *App) Objects() map[string]fyne.CanvasObject {
+	out := make(map[string]fyne.CanvasObject)
+	for k, v := range a.objects {
+		out[k] = v
+	}
+	return out
 }
 
 // Create new application window.
 // Call ShowAndRun to display the window.
 func NewApp(title string) *App {
 	a := app.New()
+	a.SetIcon(resourceAppIco)
+
 	w := a.NewWindow(title)
 	w.Resize(fyne.NewSize(600, 400))
+
+	i := &App{
+		App:            a,
+		changeListener: make(chan fyne.Settings),
+		MemoryCell:     memory.NewMemoryCell(),
+		Window:         w,
+		objects:        make(ObjectStorage),
+	}
+
+	a.Settings().AddChangeListener(i.changeListener)
 	a.Settings().SetTheme(NewDoubleSizeTheme(theme.DefaultTheme()))
 
-	return &App{App: a, Window: w}
+	return i
 }

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"math/big"
@@ -17,7 +18,7 @@ type Node = NodeInterface[*node]
 // NodeInterface is a generic interface for nodes in the parse tree
 // It is used to define the methods that are common to all nodes
 type NodeInterface[n any] interface {
-	Evaluate(p *parser) (*big.Float, error)
+	Evaluate(ctx context.Context, p *parser) (*big.Float, error)
 	Float() (*big.Float, bool)
 	IsLeaf() bool
 	Left() n
@@ -36,10 +37,19 @@ type node struct {
 }
 
 // Evaluate evaluates the node and returns the result
-func (node *node) Evaluate(p *parser) (*big.Float, error) {
+func (node *node) Evaluate(ctx context.Context, p *parser) (*big.Float, error) {
+	// Check if context is done
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	if node.IsLeaf() { // Leaf node, check if it is a variable or a number
-		if val, ok := p.Variables[node.value]; ok {
+		if val, ok := p.LookupConst(node.value); ok {
 			return val, nil
+		}
+
+		if val, ok := p.LookupVariable(node.value); ok {
+			return val(), nil
 		}
 
 		if val, ok := node.Float(); ok {
@@ -50,12 +60,12 @@ func (node *node) Evaluate(p *parser) (*big.Float, error) {
 	}
 
 	// Handle function calls
-	if fn, ok := p.Functions[node.value]; ok {
+	if fn, ok := p.LookupFunc(node.value); ok {
 		// Collect all arguments
 		var args []*big.Float
 		// Extract the arguments from the nodes in the left subtree, from left to right
 		for currentNode := node.Left(); currentNode != nil; currentNode = currentNode.Right() {
-			arg, err := currentNode.Left().Evaluate(p)
+			arg, err := currentNode.Left().Evaluate(ctx, p)
 			if err != nil {
 				return nil, err
 			}
@@ -71,7 +81,7 @@ func (node *node) Evaluate(p *parser) (*big.Float, error) {
 	}
 
 	// Evaluate the left subtree
-	left, err := node.Left().Evaluate(p)
+	left, err := node.Left().Evaluate(ctx, p)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +89,7 @@ func (node *node) Evaluate(p *parser) (*big.Float, error) {
 	// Handle unary operators
 	switch node.Value() {
 	case "!": // Factorial
-		left, err = calc.Factorial(left, 1)
+		left, err = calc.Factorial(ctx, left, 1)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +116,7 @@ func (node *node) Evaluate(p *parser) (*big.Float, error) {
 	}
 
 	// Evaluate the right subtree
-	right, err := node.Right().Evaluate(p)
+	right, err := node.Right().Evaluate(ctx, p)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +139,7 @@ func (node *node) Evaluate(p *parser) (*big.Float, error) {
 		return big.NewFloat(0).Quo(left, right), nil
 
 	case "^": // Exponentiation
-		return calc.Pow(left, right)
+		return calc.Pow(ctx, left, right)
 
 	default:
 		return nil, fmt.Errorf("unsupported operator: %s", node.value)

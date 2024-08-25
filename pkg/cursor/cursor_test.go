@@ -3,13 +3,12 @@ package cursor
 import (
 	"testing"
 
-	"github.com/sarumaj/edu-taschenrechner/pkg/memory"
 	"github.com/sarumaj/edu-taschenrechner/pkg/runes"
 )
 
 func TestExampleFor_Cursor(t *testing.T) {
 	get := func() Cursor {
-		return New(runes.NewSequence(""), memory.NewMemoryCell())
+		return New(runes.NewSequence(""), 0)
 	}
 
 	for _, tt := range []struct {
@@ -47,17 +46,13 @@ func TestExampleFor_Cursor(t *testing.T) {
 }
 
 func TestExampleFor_Do(t *testing.T) {
-	setup := func(t testing.TB) (*runes.Sequence, memory.MemoryCell) {
-		t.Helper()
-		return runes.NewSequence("_"), memory.NewMemoryCell()
-	}
 
 	type args struct {
 		operator        string
 		requestNewSetup bool
 	}
 
-	input, memory := setup(t)
+	input := runes.NewSequence("_")
 
 	for _, tt := range []struct {
 		name string
@@ -81,19 +76,19 @@ func TestExampleFor_Do(t *testing.T) {
 		{"test#15", args{"=", false}, "-6×((2-7)×0.6)_"},
 		{"test#16", args{"+", false}, "-6×((2-7)×0.6)+_"},
 		{"test#17", args{"9", false}, "-6×((2-7)×0.6)+9_"},
-		{"test#18", args{"=", false}, "27"},
+		{"test#18", args{"=", false}, "NaN"},
 		{"test#19", args{"=", true}, "_"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.requestNewSetup {
-				input, memory = setup(t)
+				input = runes.NewSequence("_")
 			}
 
-			Do(tt.args.operator, input, memory)
+			New(input, 0).Do(tt.args.operator)
 			got := input.String()
 
 			if got != tt.want {
-				t.Errorf(`Evaluate(%q, %T, %T) failed, got: %q, want: %q`, tt.args.operator, input, memory, got, tt.want)
+				t.Errorf(`Evaluate(%q, %T) failed, got: %q, want: %q`, tt.args.operator, input, got, tt.want)
 			}
 		})
 	}

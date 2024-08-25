@@ -1,3 +1,29 @@
+/*
+Package runes provides a set of functions to work with runes.
+It features functions to split a string into a slice of strings where each contains just one rune,
+check if a rune is within a given range, check if a rune is a digit, letter, or word character,
+and more.
+
+Sequences can be used to work with runes in a more programmer-friendly way.
+
+Example:
+
+	Each("Hello") // returns []string{"H", "e", "l", "l", "o"}
+	IsDigit('1') // returns true
+	IsLetter('a') // returns true
+	IsWord('_') // returns true
+	Sequence("Hello").BeginsWith("He") // returns true
+	Sequence("Hello").Backspace() // removes the last rune
+	Sequence("Hello").Delete() // removes the first rune
+	Sequence("Hello").Clear() // removes all runes
+	Sequence("Hello").Contains("He") // returns true
+	Sequence("Hello").String() // returns "Hello"
+	Sequence("Hello").Shift().String() // returns "Hello" without the first rune
+	Sequence("Hello").Back().String() // returns "o"
+	HowManyOpen(Sequence("Hello (world)")) // returns 1
+	IsDotted(Sequence("Hello 123.45")) // returns true
+	IsAnyOf('a', "abc") // returns true
+*/
 package runes
 
 // Each splits a string into a slice of strings where each contains just one rune.

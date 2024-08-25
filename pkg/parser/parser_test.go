@@ -1,16 +1,17 @@
 package parser
 
 import (
+	"context"
 	"math"
 	"math/big"
 	"testing"
 )
 
 func TestExampleFor_Parser(t *testing.T) {
-	x := WithVar("x", big.NewFloat(10.5))
-	y := WithVar("y", big.NewFloat(5.2))
-	pi := WithVar("PI", big.NewFloat(math.Pi))
-	e := WithVar("e", big.NewFloat(math.E))
+	x := WithVar("x", func() *big.Float { return big.NewFloat(10.5) })
+	y := WithVar("y", func() *big.Float { return big.NewFloat(5.2) })
+	pi := WithConst("PI", big.NewFloat(math.Pi))
+	e := WithConst("e", big.NewFloat(math.E))
 	max_2 := WithFunc("max_2", func(x, y *big.Float) (*big.Float, error) {
 		if x.Cmp(y) >= 0 {
 			return x, nil
@@ -54,7 +55,7 @@ func TestExampleFor_Parser(t *testing.T) {
 		{"test#19", args{"6!°", []Option{}}, big.NewFloat(0).Mul(big.NewFloat(720), big.NewFloat(0).Quo(big.NewFloat(math.Pi), big.NewFloat(180)))},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewParser(tt.args.opts...).Parse(tt.args.expr)
+			got, err := NewParser(tt.args.opts...).Parse(context.TODO(), tt.args.expr)
 			if err != nil {
 				t.Errorf("Error parsing expression %q: %v", tt.args.expr, err)
 			} else if got.Cmp(tt.want) != 0 {

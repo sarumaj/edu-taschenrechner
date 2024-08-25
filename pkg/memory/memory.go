@@ -1,3 +1,14 @@
+/*
+Package memory provides a simple memory cell for storing and retrieving big floating point numbers.
+Generic memory cells can be created using the NewGenericMemoryCell function.
+Memory cells can be used to store and retrieve variables for the calculator.
+
+Example:
+
+	cell := memory.NewMemoryCell()
+	cell.Set(big.NewFloat(42))
+	fmt.Println(cell.Get()) // prints 42
+*/
 package memory
 
 import (
@@ -6,7 +17,7 @@ import (
 )
 
 // Make sure *memoryCell implements MemoryCell
-var _ MemoryCell = &memoryCell[*big.Float]{}
+var _ MemoryCell = (*memoryCell[*big.Float])(nil)
 
 // MemoryCell is an interface for storing and retrieving big floating point numbers.
 type MemoryCell = MemoryCellInterface[*big.Float]
