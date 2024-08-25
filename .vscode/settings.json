@@ -3,13 +3,19 @@
     "arccos",
     "arcsin",
     "arctan",
+    "Asana",
     "coeff",
     "conti",
+    "Cursorable",
+    "exceedance",
     "Fyne",
     "Godog",
     "Goval",
+    "Keyable",
     "maja",
+    "Noto",
     "sarumaj",
+    "Tappable",
     "taschenrechner"
   ]
 }
