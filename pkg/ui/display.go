@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"strings"
 	"time"
@@ -113,9 +112,8 @@ func (display *Display) SetParserOptions(options ...parser.Option) *Display {
 // It moves the cursor to the end of the text and checks the state of the cursor.
 // If the cursor is in an invalid state, it shows an error dialog.
 func (display *Display) SetText(text string) {
-	window := fyne.CurrentApp().Driver().AllWindows()[0]
-
 	if text == "=" && Interactive { // Display waiting dialog when calculating
+		window := fyne.CurrentApp().Driver().AllWindows()[0]
 		dialog.ShowCustomWithoutButtons(
 			"Calculating",
 			widget.NewLabel(fmt.Sprintf("Evaluating: %q", strings.TrimSuffix(display.Text, "_"))),
@@ -152,17 +150,16 @@ func (display *Display) SetText(text string) {
 		display.Entry.SetText(result)
 
 		// schedule an update of the entry on the main thread
+		window := fyne.CurrentApp().Driver().AllWindows()[0]
 		windowCanvas := window.Canvas()
 		windowCanvas.Refresh(&display.Entry)
 
 		// remove all dialog overlays from the canvas
 		for _, overlay := range windowCanvas.Overlays().List() {
-			log.Printf("%T\n", overlay)
 			switch overlay.(type) {
 			case dialog.Dialog, *widget.PopUp:
 				windowCanvas.Overlays().Remove(overlay)
 			}
-
 		}
 
 		// check the state of the cursor and show an error dialog if needed

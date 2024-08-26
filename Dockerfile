@@ -10,7 +10,9 @@ RUN go mod download && go mod verify
 
 COPY . .
 
-RUN fyne package -os web -icon ./pkg/ui/icons/app.ico
+RUN version=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' | grep -Eo '^[0-9]+(\.[0-9]+){0,2}') && \
+    [ -n "$version" ] || version="0.0.1"; \
+    fyne package -os web -icon ./pkg/ui/icons/app.ico --appVersion "$version" --release --name "taschenrechner"
 
 # production image
 FROM nginx:alpine AS final
