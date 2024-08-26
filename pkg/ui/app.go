@@ -1,3 +1,5 @@
+//go:build !headless
+
 /*
 Package ui provides a user interface for the calculator.
 The calculator can be used to perform basic arithmetic operations.
@@ -29,6 +31,7 @@ import (
 )
 
 const (
+	appID        = "com.github.sarumaj.edu-taschenrechner"
 	githubLink   = "https://github.com/sarumaj/edu-taschenrechner"
 	linkedinLink = "https://www.linkedin.com/in/dawid-ciepiela"
 )
@@ -214,7 +217,7 @@ func (a *App) Objects() map[string]fyne.CanvasObject {
 // Create new application window.
 // Call ShowAndRun to display the window.
 func NewApp(title string) *App {
-	a := app.New()
+	a := app.NewWithID(appID)
 	a.SetIcon(resourceAppIco)
 
 	w := a.NewWindow(title)

@@ -1,3 +1,5 @@
+//go:build !headless
+
 package ui
 
 import (
@@ -112,13 +114,15 @@ func (display *Display) SetParserOptions(options ...parser.Option) *Display {
 // It moves the cursor to the end of the text and checks the state of the cursor.
 // If the cursor is in an invalid state, it shows an error dialog.
 func (display *Display) SetText(text string) {
-	if text == "=" && Interactive { // Display waiting dialog when calculating
+	// create a new cursor
+	textCursor := cursor.New(runes.NewSequence(display.Text), time.Minute, display.parserOpts...)
+
+	if text == "=" && Interactive { // Display cancelable waiting dialog when calculating
 		window := fyne.CurrentApp().Driver().AllWindows()[0]
-		dialog.ShowCustomWithoutButtons(
-			"Calculating",
-			widget.NewLabel(fmt.Sprintf("Evaluating: %q", strings.TrimSuffix(display.Text, "_"))),
-			window,
-		)
+		info := dialog.NewInformation("Calculating", fmt.Sprintf("Evaluating: %q", strings.TrimSuffix(display.Text, "_")), window)
+		info.SetDismissText("Abort")
+		info.SetOnClosed(func() { textCursor.Cancel() })
+		info.Show()
 	}
 
 	// define a channel for synchronization
@@ -128,12 +132,9 @@ func (display *Display) SetText(text string) {
 	}
 
 	// run the cursor operation in a separate goroutine
-	go func() {
-		// create a new cursor
-		textCursor := cursor.New(runes.NewSequence(display.Text), time.Minute, display.parserOpts...)
-
+	go func(sync chan<- struct{}) {
 		// perform the operation on the cursor
-		result := textCursor.Do(strings.TrimSpace(text)).String()
+		result := textCursor.Do(text).String()
 
 		// on first exceedance of the maximum content length, show the current value in scientific notation
 		if display.MaximumContentLength > 0 && len(result) > display.MaximumContentLength {
@@ -168,9 +169,10 @@ func (display *Display) SetText(text string) {
 		}
 
 		if !Interactive {
-			sync <- struct{}{}
+			sync <- struct{}{} // Signal the end of the operation
+			close(sync)
 		}
-	}()
+	}(sync)
 
 	if !Interactive {
 		<-sync

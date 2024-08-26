@@ -21,9 +21,25 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+
       - name: Export Module Name
         id: export_module_name
         run: echo "MODULE_NAME=$(go mod edit -json | jq -r '.Module.Path')" >> "$GITHUB_OUTPUT"
+
+      - name: Install go tools
+        run: |
+          go install golang.org/x/tools/gopls@latest && \
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+      - name: Run linters and tests
+        run: |
+          gofmt -s -d ./ && \
+          golangci-lint run -v --timeout 5m --build-tags headless && \
+          go test -v -race -tags headless ./...
 
       - name: Deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.13.15

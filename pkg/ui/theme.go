@@ -1,5 +1,8 @@
+//go:build !headless
+
 //go:generate sh -c "$(go env GOPATH)/bin/fyne bundle -o bundled.go -package ui icons"
 //go:generate sh -c "$(go env GOPATH)/bin/fyne bundle -a -o bundled.go -package ui fonts"
+//go:generate sh -c "sed -i.bak '1s;^;//go:build !headless\\n\\n;' bundled.go && rm bundled.go.bak"
 package ui
 
 import (

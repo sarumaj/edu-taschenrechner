@@ -7,7 +7,9 @@ func TestExampleFor_MemoryCell(t *testing.T) {
 	cell := NewGenericMemoryCell[int]()
 
 	// store a value in the memory cell
-	cell.Set(42)
+	if err := cell.Set(42); err != nil {
+		t.Errorf("MemoryCell.Set() error = %v, want nil", err)
+	}
 
 	// retrieve the value from the memory cell
 	if got := cell.Get(); got != 42 {
