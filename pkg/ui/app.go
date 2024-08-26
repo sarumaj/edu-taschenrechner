@@ -21,6 +21,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -158,10 +159,13 @@ func (a *App) Build() {
 		})
 
 		// lay out the components
-		appContent := container.NewGridWithRows(7,
-			container.NewBorder(
-				nil, nil, nil, a.objects["toolbar"],
-				a.objects["display"],
+		var appContent fyne.CanvasObject = container.NewGridWithRows(7,
+			container.NewVBox(
+				container.NewBorder(
+					nil, nil, nil, a.objects["toolbar"],
+					a.objects["display"],
+				),
+				widget.NewSeparator(),
 			),
 			container.NewGridWithColumns(3,
 				container.NewGridWithColumns(2, a.objects.SelectCanvasObjects("√", "xⁿ")...),
@@ -183,6 +187,22 @@ func (a *App) Build() {
 				a.objects["="],
 			),
 		)
+
+		// add title and subtitle if running in a browser
+		if a.Driver().Device().IsBrowser() {
+			title := canvas.NewText("Taschenrechner", nil)
+			title.Alignment = fyne.TextAlignCenter
+			title.TextStyle = fyne.TextStyle{Bold: true}
+			title.TextSize = 52
+			a.objects["title"] = title
+
+			subTitle := canvas.NewText("A simple calculator app", nil)
+			subTitle.Alignment = fyne.TextAlignCenter
+			subTitle.TextSize = 32
+			a.objects["subTitle"] = subTitle
+
+			appContent = container.NewBorder(container.NewVBox(title, subTitle, widget.NewSeparator()), nil, nil, nil, appContent)
+		}
 
 		// fill in the application window
 		a.Window.SetContent(container.NewCenter(appContent))
