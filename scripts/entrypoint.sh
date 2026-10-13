@@ -31,7 +31,7 @@ http {
   server {
     listen $PORT;
 
-    server_name taschenrechner.sarumaj.com;
+    server_name taschenrechner.apps.ciepiela.org;
 
     location / {
       # Limit the number of requests per second

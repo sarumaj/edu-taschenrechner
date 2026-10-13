@@ -1,14 +1,6 @@
-[![deploy](https://github.com/sarumaj/edu-taschenrechner/actions/workflows/deploy.yml/badge.svg)](https://github.com/sarumaj/edu-taschenrechner/actions/workflows/deploy.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/sarumaj/edu-taschenrechner)](https://goreportcard.com/report/github.com/sarumaj/edu-taschenrechner)
-[![Maintainability](https://api.codeclimate.com/v1/badges/7892a10c0883ff8bbe71/maintainability)](https://codeclimate.com/github/sarumaj/edu-taschenrechner/maintainability)
-[![Go Reference](https://pkg.go.dev/badge/github.com/sarumaj/edu-taschenrechner.svg)](https://pkg.go.dev/github.com/sarumaj/edu-taschenrechner)
-[![Go version](https://img.shields.io/github/go-mod/go-version/sarumaj/edu-taschenrechner?logo=go&label=&labelColor=gray)](https://go.dev)
-
----
-
 # taschenrechner
 
-This is an example project to showcase how to organize application code, implement unit tests and define integrity tests using a [BDT framework](https://www.loadmill.com/blog/behavior-driven-testing-the-complete-guide-to-bdt-automation). The app is available under [taschenrechner.sarumaj.com](https://taschenrechner.sarumaj.com).
+This is an example project to showcase how to organize application code, implement unit tests and define integrity tests using a [BDT framework](https://www.loadmill.com/blog/behavior-driven-testing-the-complete-guide-to-bdt-automation). The app is available under [taschenrechner.apps.ciepiela.org](https://taschenrechner.apps.ciepiela.org).
 
 ![Application screenshot](assets/demo.png)
 
@@ -30,10 +22,12 @@ To setup similar project follow following steps:
 1. Create GitHub repository.
 2. [Install](https://github.com/git-guides/install-git) git CLI and [authenticate](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-authentication-to-github) it.
 3. Clone your repository:
-   ```
+
+   ```bash
    git clone https://github.com/[username]/[repository name]
    cd [repository name]
    ```
+
 4. Initialize new Go module: `go mod init github.com/[username]/[repository name]`, where `github.com/[username]/[repository name]` will be your module name.
 5. Start coding. Additional libraries can ben added using `go get [module name]`. Use `go mod tidy` if necessary.
 6. Define unit tests and execute: `go test -v ./...`
@@ -43,10 +37,12 @@ To setup similar project follow following steps:
    1. Status check: `git status`
    2. Pull: `git pull`
    3. Stage and commit:
-      ```
+
+      ```bash
       git add .
       git commit -m "[your commit message goes here]"
       ```
+
    4. Push: `git push`
    5. Advanced usage:
       1. Create a temporary branch: `git checkout -b [branch name]`
@@ -102,7 +98,7 @@ To setup similar project follow following steps:
 The [application entrypoint](main.go) makes use of the [package ui](pkg/ui). The import path is always the module name followed by the package path, e.g.
 
 | Property    | Value                                    |
-| ----------- | ---------------------------------------- |
+|-------------|------------------------------------------|
 | Module name | github.com/sarumaj/taschenrechner        |
 | Package     | pkg/ui                                   |
 | Import path | github.com/sarumaj/taschenrechner/pkg/ui |
