@@ -3,7 +3,7 @@ FROM golang:latest AS builder
 WORKDIR /usr/src/app
 
 RUN go install fyne.io/fyne/v2/cmd/fyne@latest && \
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 
 COPY go.mod go.sum ./
 
